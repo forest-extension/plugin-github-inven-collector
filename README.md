@@ -1,0 +1,1 @@
+# plugin-github-inven-collector
