@@ -20,7 +20,7 @@ class RepositoryConnector(BaseConnector):
             _LOGGER.error(f"Request Error: {e}")
             raise e
 
-    def list_repo_tags(self, url, secret_data):
+    def get_repo_tags(self, url, secret_data):
         headers = self.create_headers(secret_data)
         try:
             response = requests.get(url, headers=headers).json()
