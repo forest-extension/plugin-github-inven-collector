@@ -12,13 +12,12 @@ class RequestConnector(BaseConnector):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @staticmethod
-    def send_request(url, headers, body=dict, method="GET", page=None, per_page=30):
+    def send_request(
+        self, url, headers, body=dict, method="GET", page=None, per_page=30
+    ):
         try:
             if page:
-                for response in RequestConnector.page_nation(
-                    url, headers, body, per_page, page
-                ):
+                for response in self._pagination(url, headers, body, per_page, page):
                     yield response
             else:
                 response = requests.get(url, headers=headers).json()
@@ -28,7 +27,7 @@ class RequestConnector(BaseConnector):
             raise e
 
     @staticmethod
-    def page_nation(url, headers, body, per_page, page):
+    def _pagination(url, headers, body, per_page, page):
         responses = []
         while True:
             if url in "&":
