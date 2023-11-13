@@ -1,0 +1,22 @@
+---
+search:
+  fields:
+    - Description: data.description
+    - Url: data.html_url
+    - Topics: data.topics
+    - Language: data.language
+
+
+table:
+  sort:
+    key: data.created_at
+    desc: true
+  fields:
+    - Description: data.description
+    - Url: data.html_url
+    - Topics: data.topics
+    - Language: data.language
+    - Open Issues Count: data.open_issues_count
+    - Forks Count: data.forks_count
+    - Stargazers Count: data.stargazers_count
+    - Watchers Count: data.watchers_count
