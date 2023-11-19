@@ -51,7 +51,7 @@ class RepositoryManager:
             item['dev_dockerhub_tag'] = '1.0.0'
             item['prod_dockerhub_tag'] = '1.0.0'
             item['pypi_tag'] = '1.0.0'
-            item['type'] = 'plugin'  # core|plugin|package
+            item['type'] = self.get_repo_type_by_topics(item.topics)
             cloud_service = make_cloud_service(
                 name=self.cloud_service_type,
                 cloud_service_type=self.cloud_service_type,
@@ -64,7 +64,8 @@ class RepositoryManager:
                 match_keys=[["name", "reference.resource_id", "account", "provider"]],
             )
 
-    def get_latest_tag(self, repo_name, secret_data) -> str:
+    @staticmethod
+    def get_latest_tag(repo_name, secret_data) -> str:
         repository_connector = RepositoryConnector()
         tag_items = repository_connector.list_repo_tags(repo_name, secret_data)
 
@@ -76,3 +77,16 @@ class RepositoryManager:
         tag_items.sort(key=lambda x: x['date'], reverse=True)
 
         return tag_items[0].name
+
+    @staticmethod
+    def get_repo_type_by_topics(topics: list):
+        if 'plugin' in topics:
+            return 'plugin'
+        elif 'core' in topics:
+            return 'core'
+        elif 'doc' in topics:
+            return 'doc'
+        elif 'spacectl' in topics:
+            return 'tools'
+        else:
+            return 'common'
