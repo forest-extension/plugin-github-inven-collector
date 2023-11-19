@@ -1,0 +1,48 @@
+---
+search:
+  fields:
+    - Title: data.title
+    - Description: data.description
+    - Number: data.number
+    - Repository: data.repo_name
+
+table:
+  sort:
+    key: data.updated_at
+    desc: true
+  fields:
+    - Title: data.title
+    - State: data.state
+      type: badge
+      outline_color: green.500
+      shape: ROUND
+    - Number: data.number
+    - URL: data.html_url
+    - Created by: data.user.login
+    - Label: data.lables
+      type: dict
+    - Comments: data.comments
+    - Repository: data.repo_name
+    - Repository_url: data.repository_url
+    - Created at: data.created_at
+      type: datetime
+    - Updated at: data.updated_at
+      type: datetime
+
+tabs.0:
+  name: Issue Details
+  type: html
+  fields:
+    - Issue: data.body
+
+tab.1:
+  name: Pulls
+  type: table
+  fields:
+    - Title: data.pulls.title
+    - Url: data.pulls.html_url
+    - User: data.pulls.user.login
+    - Created at: data.pulls.created_at
+      type: datetime
+    - Updated at: data.pulls.updated_at
+      type: datetime
