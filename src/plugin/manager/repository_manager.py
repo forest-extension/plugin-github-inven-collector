@@ -55,7 +55,7 @@ class RepositoryManager:
             item['prod_dockerhub_tag'] = self.get_latest_dockerhub_tag(
                 secret_data['prod_dockerhub'], item.name, secret_data
             )
-            item['pypi_tag'] = '1.0.0'
+            item['pypi_tag'] = self.get_latest_pypi_tag(item.name)
             item['type'] = self.get_repo_type_by_topics(item.topics)
             cloud_service = make_cloud_service(
                 name=self.cloud_service_type,
@@ -91,6 +91,10 @@ class RepositoryManager:
         tag_items.sort(key=lambda x: x['last_updated'], reverse=True)
 
         return tag_items[0].name
+
+    @staticmethod
+    def get_latest_pypi_tag(self, repo_name, secret_data) -> str:
+        return '1.0.0'
 
     @staticmethod
     def get_repo_type_by_topics(topics: list):
