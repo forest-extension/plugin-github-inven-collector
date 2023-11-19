@@ -2,6 +2,7 @@ import logging
 from spaceone.inventory.plugin.collector.lib import *
 
 from plugin.connector.repository_connector import RepositoryConnector
+from plugin.connector.dockerhub.dockerhub_connector import DockerhubConnector
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,8 +49,12 @@ class RepositoryManager:
         repo_items = repository_connector.list_organization_repos(secret_data)
         for item in repo_items:
             item['github_tag'] = self.get_latest_tag(item.name, secret_data)
-            item['dev_dockerhub_tag'] = '1.0.0'
-            item['prod_dockerhub_tag'] = '1.0.0'
+            item['dev_dockerhub_tag'] = self.get_latest_dockerhub_tag(
+                secret_data['dev_dockerhub'], item.name, secret_data
+            )
+            item['prod_dockerhub_tag'] = self.get_latest_dockerhub_tag(
+                secret_data['prod_dockerhub'], item.name, secret_data
+            )
             item['pypi_tag'] = '1.0.0'
             item['type'] = self.get_repo_type_by_topics(item.topics)
             cloud_service = make_cloud_service(
@@ -75,6 +80,15 @@ class RepositoryManager:
             tag_items['date'] = commit_by_sha.committer.data
 
         tag_items.sort(key=lambda x: x['date'], reverse=True)
+
+        return tag_items[0].name
+
+    @staticmethod
+    def get_latest_dockerhub_tag(namespace, repo_name, secret_data) -> str:
+        dockerhub_connector = DockerhubConnector()
+        tag_items = dockerhub_connector.get_tags(namespace, repo_name, secret_data)
+
+        tag_items.sort(key=lambda x: x['last_updated'], reverse=True)
 
         return tag_items[0].name
 
