@@ -8,6 +8,7 @@ _LOGGER = logging.getLogger("cloudforet")
 
 
 class RepoManager:
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -58,21 +59,35 @@ class RepoManager:
 
         all_issues = []
 
+        _LOGGER.debug(f"Repos: {repos}")
+
         for repo in repos:
-            repo_owner, repo_name = repo["owner"]["login"], repo["name"]
-            issues = repo_connector.get_repo_issues(secret_data, repo_owner, repo_name)
-            pulls = repo_connector.get_repo_pulls(secret_data, repo_owner, repo_name)
+            _LOGGER.debug(f"Processing repo: {repo}")
 
-            for issue in issues:
-                issue["repo_name"] = repo_name
-                issue["pulls"] = pulls
+            owner = repo.get("owner", {})
+            repo_name = repo.get("name")
 
-            all_issues.extend(issues)
+            if repo_name and owner:
+                repo_owner = owner.get("login")
+
+                _LOGGER.debug(f"Processing issues for repo: {repo_name}")
+
+                issues = repo_connector.get_repo_issues(secret_data, repo_owner, repo_name)
+                pulls = repo_connector.get_repo_pulls(secret_data, repo_owner, repo_name)
+
+                for issue in issues:
+                    issue["repo_name"] = repo_name
+                    issue["pulls"] = pulls
+
+                all_issues.extend(issues)
+            else:
+                _LOGGER.warning("Missing required attributes in repo: {repo}")
 
         all_issues.sort(key=lambda x: x.get("created_at", ""), reverse=True)
 
         for issue in all_issues:
-            issue_labels = {label["name"]: label for label in issue.get("labels", [])}
+            labels = issue.get("labels", [])
+            issue_labels = {label.get("name"): label for label in labels}
             issue["labels"] = issue_labels
 
             cloud_service = make_cloud_service(
@@ -87,3 +102,4 @@ class RepoManager:
                 cloud_service=cloud_service,
                 match_keys=[["name", "reference.resource_id", "account", "provider"]],
             )
+

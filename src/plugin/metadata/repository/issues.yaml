@@ -5,6 +5,7 @@ search:
     - Description: data.description
     - Number: data.number
     - Repository: data.repo_name
+    - Created by: data.user.login
 
 table:
   sort:
