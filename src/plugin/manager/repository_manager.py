@@ -1,6 +1,6 @@
 import logging
 from spaceone.inventory.plugin.collector.lib import *
-
+from packaging import version
 from plugin.connector.repository_connector import RepositoryConnector
 from plugin.connector.dockerhub.dockerhub_connector import DockerhubConnector
 
@@ -48,15 +48,17 @@ class RepositoryManager:
         repository_connector = RepositoryConnector()
         repo_items = repository_connector.list_organization_repos(secret_data)
         for item in repo_items:
-            item['github_tag'] = self.get_latest_tag(item.name, secret_data)
+            repo_name = item.get('name')
+            item['github_tag'] = self.get_latest_tag(repo_name, secret_data)
             item['dev_dockerhub_tag'] = self.get_latest_dockerhub_tag(
                 secret_data['dev_dockerhub'], item.name, secret_data
             )
             item['prod_dockerhub_tag'] = self.get_latest_dockerhub_tag(
                 secret_data['prod_dockerhub'], item.name, secret_data
             )
-            item['pypi_tag'] = self.get_latest_pypi_tag(item.name)
-            item['type'] = self.get_repo_type_by_topics(item.topics)
+            item['pypi_tag'] = self.get_latest_pypi_tag(item['name'], secret_data)
+            item['type'] = self.get_repo_type_by_topics(item['topics'])
+            item['topics'] = item.topics
             cloud_service = make_cloud_service(
                 name=self.cloud_service_type,
                 cloud_service_type=self.cloud_service_type,
@@ -71,29 +73,34 @@ class RepositoryManager:
 
     @staticmethod
     def get_latest_tag(repo_name, secret_data) -> str:
+        all_tag_items = []
+        page = 1
         repository_connector = RepositoryConnector()
-        tag_items = repository_connector.list_repo_tags(repo_name, secret_data)
 
-        for item in tag_items:
-            tag_commit_sha = item.commit.sha
-            commit_by_sha = repository_connector.get_commit_by_sha(repo_name, tag_commit_sha, secret_data)
-            tag_items['date'] = commit_by_sha.committer.data
+        while True:
+            tag_items = repository_connector.list_repo_tags(repo_name, secret_data, page)
+            print(len(tag_items))
+            if not tag_items:
+                break
 
-        tag_items.sort(key=lambda x: x['date'], reverse=True)
+            all_tag_items.extend(tag_items)
+            page += 1
 
-        return tag_items[0].name
+        versions = [version.parse(item['name']) for item in all_tag_items]
+        latest_version = max(versions)
+        return str(latest_version)
 
     @staticmethod
     def get_latest_dockerhub_tag(namespace, repo_name, secret_data) -> str:
         dockerhub_connector = DockerhubConnector()
-        tag_items = dockerhub_connector.get_tags(namespace, repo_name, secret_data)
+        tag_items = dockerhub_connector.get_tags(namespace, repo_name)
 
         tag_items.sort(key=lambda x: x['last_updated'], reverse=True)
 
         return tag_items[0].name
 
     @staticmethod
-    def get_latest_pypi_tag(self, repo_name, secret_data) -> str:
+    def get_latest_pypi_tag(repo_name, secret_data) -> str:
         return '1.0.0'
 
     @staticmethod

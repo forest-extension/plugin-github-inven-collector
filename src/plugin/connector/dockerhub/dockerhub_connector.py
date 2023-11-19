@@ -2,9 +2,9 @@ import abc
 import requests
 import logging
 
-_LOGGER = logging.getLogger(__name__)
-
 from spaceone.core.connector import BaseConnector
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class RegistryConnector(BaseConnector):
@@ -14,7 +14,7 @@ class RegistryConnector(BaseConnector):
         pass
 
 
-class DockerHubConnector(RegistryConnector):
+class DockerhubConnector(RegistryConnector):
     def get_tags(self, namespace, repository):
         url = f'https://hub.docker.com/v2/{namespace}/{repository}/tags'
 
