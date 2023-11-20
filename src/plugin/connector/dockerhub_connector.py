@@ -13,7 +13,7 @@ class DockerhubConnector(RequestConnector):
         url = f'https://hub.docker.com/v2/namespaces/{namespace}/repositories/{repository}/tags'
         headers = self.make_header(secret_data)
 
-        response = requests.get(url, headers=headers)
+        response = self.send_request(url, headers=headers)
 
         if response.status_code == 200:
             results = response.json().get('results', [])

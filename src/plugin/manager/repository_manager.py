@@ -98,11 +98,11 @@ class RepositoryManager:
     def get_latest_dockerhub_tag(namespace, repo_name, secret_data) -> str:
         dockerhub_connector = DockerhubConnector()
         tag_items = dockerhub_connector.list_tags(namespace, repo_name, secret_data)
+        tags = list(tag_items)
 
-        if not tag_items:
+        if not tags:
             return ''
 
-        tags = list(tag_items)
         tags.sort(key=lambda x: x['last_updated'], reverse=True)
 
         return tags[0]['name']
