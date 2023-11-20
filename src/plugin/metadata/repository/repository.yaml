@@ -10,10 +10,9 @@ table:
     key: data.name
     desc: true
   fields:
-    - Name: data.name
+    - Type: data.type
     - GitHub Tag: data.github_tag
     - Dev DockerHub Tag: data.dev_dockerhub_tag
     - Prod DockerHub Tag: data.prod_dockerhub_tag
     - Pypi Tag: data.pypi_tag
-    - Type: data.type
     - Topics: data.topics

@@ -14,7 +14,7 @@ class RepositoryManager:
 
         self.cloud_service_group = 'Repository'
         self.cloud_service_type = 'Repository'
-        self.provider = 'github'
+        self.provider = 'github_samuel_v3'
         self.metadata_path = 'plugin/metadata/repository/repository.yaml'
 
     def collect_resources(self, options, secret_data, schema):
@@ -50,18 +50,18 @@ class RepositoryManager:
         repo_items = repository_connector.list_organization_repos(secret_data)
         for item in repo_items:
             repo_name = item.get('name')
-            # item['github_tag'] = self.get_latest_tag(repo_name, secret_data)
-            # item['dev_dockerhub_tag'] = self.get_latest_dockerhub_tag(
-            #     secret_data['dev_dockerhub'], repo_name, secret_data
-            # )
+            item['github_tag'] = self.get_latest_tag(repo_name, secret_data)
+            item['dev_dockerhub_tag'] = self.get_latest_dockerhub_tag(
+                secret_data['dev_dockerhub_name'], repo_name, secret_data
+            )
             item['prod_dockerhub_tag'] = self.get_latest_dockerhub_tag(
-                secret_data['prod_dockerhub'], repo_name, secret_data
+                secret_data['prod_dockerhub_name'], repo_name, secret_data
             )
             item['pypi_tag'] = self.get_latest_pypi_tag(item['name'], secret_data)
             item['type'] = self.get_repo_type_by_topics(item['topics'])
             item['topics'] = item['topics']
             cloud_service = make_cloud_service(
-                name=self.cloud_service_type,
+                name=repo_name,
                 cloud_service_type=self.cloud_service_type,
                 cloud_service_group=self.cloud_service_group,
                 provider=self.provider,
@@ -89,9 +89,10 @@ class RepositoryManager:
         if not all_tag_items:
             return ''
 
-        versions = [version.parse(self.extract_version(item['name'])) for item in all_tag_items if
+        versions = [{'version': version.parse(self.extract_version(item['name'])), 'name': item['name']} for item in
+                    all_tag_items if
                     self.extract_version(item['name'])]
-        latest_version = max(versions)
+        latest_version = max(versions, key=lambda x: x['version'])['name']
         return str(latest_version)
 
     @staticmethod

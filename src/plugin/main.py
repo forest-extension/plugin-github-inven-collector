@@ -1,6 +1,9 @@
-from spaceone.inventory.plugin.collector.lib.server import CollectorPluginServer
+import logging
 
+from spaceone.inventory.plugin.collector.lib.server import CollectorPluginServer
 from plugin.manager.repository_manager import RepositoryManager
+
+_LOGGER = logging.getLogger('cloudforet')
 
 app = CollectorPluginServer()
 

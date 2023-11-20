@@ -48,7 +48,7 @@ class RequestConnector(BaseConnector):
         headers = {
             "Accept": "application/vnd.github+json",
             "Authorization": f"Bearer {github_token}",
-            "X-GitHub-Api-Version": "2022-11-28",
+            "X-GitHub-Api-Version": "2022-11-28"
         }
         return headers
 
