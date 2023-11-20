@@ -51,3 +51,9 @@ class RequestConnector(BaseConnector):
             "X-GitHub-Api-Version": "2022-11-28",
         }
         return headers
+
+    @staticmethod
+    def make_JWT_header(secret_data):
+        docker_token = secret_data.get("docker_token")
+        headers = {"Authorization": f"JWT {docker_token}"}
+        return headers

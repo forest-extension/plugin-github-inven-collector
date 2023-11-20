@@ -3,7 +3,7 @@ import re
 from packaging import version
 from spaceone.inventory.plugin.collector.lib import *
 from plugin.connector.repository_connector import RepositoryConnector
-from plugin.connector.dockerhub.dockerhub_connector import DockerhubConnector
+from plugin.connector.dockerhub_connector import DockerhubConnector
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -97,7 +97,7 @@ class RepositoryManager:
     @staticmethod
     def get_latest_dockerhub_tag(namespace, repo_name, secret_data) -> str:
         dockerhub_connector = DockerhubConnector()
-        tag_items = dockerhub_connector.get_tags(namespace, repo_name)
+        tag_items = dockerhub_connector.list_tags(namespace, repo_name, secret_data)
 
         if not tag_items:
             return ''
