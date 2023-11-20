@@ -50,10 +50,10 @@ class RepositoryManager:
         repo_items = repository_connector.list_organization_repos(secret_data)
         for item in repo_items:
             repo_name = item.get('name')
-            item['github_tag'] = self.get_latest_tag(repo_name, secret_data)
-            item['dev_dockerhub_tag'] = self.get_latest_dockerhub_tag(
-                secret_data['dev_dockerhub'], repo_name, secret_data
-            )
+            # item['github_tag'] = self.get_latest_tag(repo_name, secret_data)
+            # item['dev_dockerhub_tag'] = self.get_latest_dockerhub_tag(
+            #     secret_data['dev_dockerhub'], repo_name, secret_data
+            # )
             item['prod_dockerhub_tag'] = self.get_latest_dockerhub_tag(
                 secret_data['prod_dockerhub'], repo_name, secret_data
             )
@@ -98,14 +98,13 @@ class RepositoryManager:
     def get_latest_dockerhub_tag(namespace, repo_name, secret_data) -> str:
         dockerhub_connector = DockerhubConnector()
         tag_items = dockerhub_connector.list_tags(namespace, repo_name, secret_data)
-        tags = list(tag_items)
 
-        if not tags:
+        tag_items.sort(key=lambda x: x['last_updated'], reverse=True)
+
+        if not tag_items:
             return ''
 
-        tags.sort(key=lambda x: x['last_updated'], reverse=True)
-
-        return tags[0]['name']
+        return tag_items[0]['name']
 
     @staticmethod
     def get_latest_pypi_tag(repo_name, secret_data) -> str:

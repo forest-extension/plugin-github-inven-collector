@@ -53,7 +53,9 @@ class RequestConnector(BaseConnector):
         return headers
 
     @staticmethod
-    def make_JWT_header(secret_data):
-        docker_token = secret_data.get("docker_token")
-        headers = {"Authorization": f"JWT {docker_token}"}
+    def make_header_dockerhub(secret_data):
+        dockerhub_token = secret_data.get("dockerhub_token")
+        headers = {
+            "Authorization": f"Bearer {dockerhub_token}",
+        }
         return headers

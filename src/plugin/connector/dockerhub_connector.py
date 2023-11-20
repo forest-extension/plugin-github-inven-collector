@@ -11,15 +11,17 @@ class DockerhubConnector(RequestConnector):
 
     def list_tags(self, namespace, repository, secret_data):
         url = f'https://hub.docker.com/v2/namespaces/{namespace}/repositories/{repository}/tags'
-        headers = self.make_header(secret_data)
+        headers = self.make_header_dockerhub(secret_data)
 
-        response = self.send_request(url, headers=headers)
+        try:
+            response = self.send_request(url, headers=headers)
+            _response = list(response)
+            if _response and _response[0].get('results'):
+                results = _response[0].get('results')
 
-        if response.status_code == 200:
-            results = response.json().get('results', [])
-            return results
-
-        else:
-            # raise ERROR_NO_IMAGE_IN_REGISTRY(registry_type='DOCKER_HUB', image=image)
-            print(f'[ERROR] {response.status_code} {response.text}')
-            return []
+                return results
+            else:
+                return []
+        except Exception as e:
+            _LOGGER.error(f"Request Error: {e}")
+            raise e
