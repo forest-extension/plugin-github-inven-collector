@@ -1,6 +1,7 @@
 import logging
-from spaceone.inventory.plugin.collector.lib import *
+import re
 from packaging import version
+from spaceone.inventory.plugin.collector.lib import *
 from plugin.connector.repository_connector import RepositoryConnector
 from plugin.connector.dockerhub.dockerhub_connector import DockerhubConnector
 
@@ -51,14 +52,14 @@ class RepositoryManager:
             repo_name = item.get('name')
             item['github_tag'] = self.get_latest_tag(repo_name, secret_data)
             item['dev_dockerhub_tag'] = self.get_latest_dockerhub_tag(
-                secret_data['dev_dockerhub'], item.name, secret_data
+                secret_data['dev_dockerhub'], repo_name, secret_data
             )
             item['prod_dockerhub_tag'] = self.get_latest_dockerhub_tag(
-                secret_data['prod_dockerhub'], item.name, secret_data
+                secret_data['prod_dockerhub'], repo_name, secret_data
             )
             item['pypi_tag'] = self.get_latest_pypi_tag(item['name'], secret_data)
             item['type'] = self.get_repo_type_by_topics(item['topics'])
-            item['topics'] = item.topics
+            item['topics'] = item['topics']
             cloud_service = make_cloud_service(
                 name=self.cloud_service_type,
                 cloud_service_type=self.cloud_service_type,
@@ -71,22 +72,25 @@ class RepositoryManager:
                 match_keys=[["name", "reference.resource_id", "account", "provider"]],
             )
 
-    @staticmethod
-    def get_latest_tag(repo_name, secret_data) -> str:
+    def get_latest_tag(self, repo_name, secret_data) -> str:
         all_tag_items = []
         page = 1
         repository_connector = RepositoryConnector()
 
         while True:
             tag_items = repository_connector.list_repo_tags(repo_name, secret_data, page)
-            print(len(tag_items))
-            if not tag_items:
+            tags = list(tag_items)
+            if not tags:
                 break
 
-            all_tag_items.extend(tag_items)
+            all_tag_items.extend(tags)
             page += 1
 
-        versions = [version.parse(item['name']) for item in all_tag_items]
+        if not all_tag_items:
+            return ''
+
+        versions = [version.parse(self.extract_version(item['name'])) for item in all_tag_items if
+                    self.extract_version(item['name'])]
         latest_version = max(versions)
         return str(latest_version)
 
@@ -95,9 +99,13 @@ class RepositoryManager:
         dockerhub_connector = DockerhubConnector()
         tag_items = dockerhub_connector.get_tags(namespace, repo_name)
 
-        tag_items.sort(key=lambda x: x['last_updated'], reverse=True)
+        if not tag_items:
+            return ''
 
-        return tag_items[0].name
+        tags = list(tag_items)
+        tags.sort(key=lambda x: x['last_updated'], reverse=True)
+
+        return tags[0]['name']
 
     @staticmethod
     def get_latest_pypi_tag(repo_name, secret_data) -> str:
@@ -115,3 +123,9 @@ class RepositoryManager:
             return 'tools'
         else:
             return 'common'
+
+    @staticmethod
+    def extract_version(tag: str):
+        version_pattern = re.compile(r'\d+\.\d+(?:\.\d+)?')
+        match = version_pattern.search(tag)
+        return match.group() if match else None

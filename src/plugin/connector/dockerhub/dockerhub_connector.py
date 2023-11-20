@@ -16,7 +16,7 @@ class RegistryConnector(BaseConnector):
 
 class DockerhubConnector(RegistryConnector):
     def get_tags(self, namespace, repository):
-        url = f'https://hub.docker.com/v2/{namespace}/{repository}/tags'
+        url = f'https://hub.docker.com/v2/namespaces/{namespace}/repositories/{repository}/tags'
 
         response = requests.get(url)
 
@@ -27,3 +27,4 @@ class DockerhubConnector(RegistryConnector):
         else:
             # raise ERROR_NO_IMAGE_IN_REGISTRY(registry_type='DOCKER_HUB', image=image)
             print(f'[ERROR] {response.status_code} {response.text}')
+            return []
