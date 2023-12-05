@@ -56,4 +56,5 @@ def collector_collect(params: dict) -> dict:
     schema = params.get("schema")
 
     org_repository_manager = OrgRepositoryManager()
+    # return org_repository_manager.collect_cloud_service_type(options, secret_data, schema)
     return org_repository_manager.collect_resources(options, secret_data, schema)
