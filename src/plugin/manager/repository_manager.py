@@ -1,0 +1,131 @@
+import logging
+import re
+from packaging import version
+from spaceone.inventory.plugin.collector.lib import *
+from plugin.connector.repository_connector import RepositoryConnector
+from plugin.connector.dockerhub_connector import DockerhubConnector
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class RepositoryManager:
+    def __init__(self, **kwargs):
+        self.connector: RepositoryConnector = RepositoryConnector(**kwargs)
+
+        self.cloud_service_group = 'Repository'
+        self.cloud_service_type = 'Repository'
+        self.provider = 'github_samuel_v3'
+        self.metadata_path = 'plugin/metadata/repository/repository.yaml'
+
+    def collect_resources(self, options, secret_data, schema):
+        try:
+            yield from self.collect_cloud_service_type(options, secret_data, schema)
+            yield from self.collect_cloud_service(options, secret_data, schema)
+        except Exception as e:
+            yield make_error_response(
+                error=e,
+                provider=self.provider,
+                cloud_service_group=self.cloud_service_group,
+                cloud_service_type=self.cloud_service_type,
+            )
+
+    def collect_cloud_service_type(self, options, secret_data, schema):
+        cloud_service_type = make_cloud_service_type(
+            name=self.cloud_service_type,
+            group=self.cloud_service_group,
+            provider=self.provider,
+            metadata_path=self.metadata_path,
+            is_primary=True,
+            is_major=True
+        )
+
+        yield make_response(
+            cloud_service_type=cloud_service_type,
+            match_keys=[['name', 'reference.resource_id', 'account', 'provider']],
+            resource_type='inventory.CloudServiceType'
+        )
+
+    def collect_cloud_service(self, options, secret_data, schema):
+        repository_connector = RepositoryConnector()
+        repo_items = repository_connector.list_organization_repos(secret_data)
+        for item in repo_items:
+            repo_name = item.get('name')
+            item['github_tag'] = self.get_latest_tag(repo_name, secret_data)
+            item['dev_dockerhub_tag'] = self.get_latest_dockerhub_tag(
+                secret_data['dev_dockerhub_name'], repo_name, secret_data
+            )
+            item['prod_dockerhub_tag'] = self.get_latest_dockerhub_tag(
+                secret_data['prod_dockerhub_name'], repo_name, secret_data
+            )
+            item['pypi_tag'] = self.get_latest_pypi_tag(item['name'], secret_data)
+            item['type'] = self.get_repo_type_by_topics(item['topics'])
+            item['topics'] = item['topics']
+            cloud_service = make_cloud_service(
+                name=repo_name,
+                cloud_service_type=self.cloud_service_type,
+                cloud_service_group=self.cloud_service_group,
+                provider=self.provider,
+                data=item,
+            )
+            yield make_response(
+                cloud_service=cloud_service,
+                match_keys=[["name", "reference.resource_id", "account", "provider"]],
+            )
+
+    def get_latest_tag(self, repo_name, secret_data) -> str:
+        all_tag_items = []
+        page = 1
+        repository_connector = RepositoryConnector()
+
+        while True:
+            tag_items = repository_connector.list_repo_tags(repo_name, secret_data, page)
+            tags = list(tag_items)
+            if not tags:
+                break
+
+            all_tag_items.extend(tags)
+            page += 1
+
+        if not all_tag_items:
+            return ''
+
+        versions = [{'version': version.parse(self.extract_version(item['name'])), 'name': item['name']} for item in
+                    all_tag_items if
+                    self.extract_version(item['name'])]
+        latest_version = max(versions, key=lambda x: x['version'])['name']
+        return str(latest_version)
+
+    @staticmethod
+    def get_latest_dockerhub_tag(namespace, repo_name, secret_data) -> str:
+        dockerhub_connector = DockerhubConnector()
+        tag_items = dockerhub_connector.list_tags(namespace, repo_name, secret_data)
+
+        tag_items.sort(key=lambda x: x['last_updated'], reverse=True)
+
+        if not tag_items:
+            return ''
+
+        return tag_items[0]['name']
+
+    @staticmethod
+    def get_latest_pypi_tag(repo_name, secret_data) -> str:
+        return '1.0.0'
+
+    @staticmethod
+    def get_repo_type_by_topics(topics: list):
+        if 'plugin' in topics:
+            return 'plugin'
+        elif 'core' in topics:
+            return 'core'
+        elif 'doc' in topics:
+            return 'doc'
+        elif 'spacectl' in topics:
+            return 'tools'
+        else:
+            return 'common'
+
+    @staticmethod
+    def extract_version(tag: str):
+        version_pattern = re.compile(r'\d+\.\d+(?:\.\d+)?')
+        match = version_pattern.search(tag)
+        return match.group() if match else None

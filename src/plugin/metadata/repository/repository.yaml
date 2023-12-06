@@ -1,0 +1,18 @@
+---
+search:
+  fields:
+    - Name: data.name
+    - Type: data.type
+    - Topics: data.topics
+
+table:
+  sort:
+    key: data.name
+    desc: true
+  fields:
+    - Type: data.type
+    - GitHub Tag: data.github_tag
+    - Dev DockerHub Tag: data.dev_dockerhub_tag
+    - Prod DockerHub Tag: data.prod_dockerhub_tag
+    - Pypi Tag: data.pypi_tag
+    - Topics: data.topics
