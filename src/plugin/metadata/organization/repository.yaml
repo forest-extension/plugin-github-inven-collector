@@ -1,0 +1,122 @@
+---
+search:
+  fields:
+    - Description: data.description
+    - Url: data.html_url
+    - Topics: data.topics
+    - Language: data.language
+
+
+table:
+  sort:
+    key: data.created_at
+    desc: true
+  fields:
+    - Name: data.name
+      link: data.html_url
+    - Description: data.description
+    - Url: data.html_url
+    - Topics: data.topics
+    - Language: data.language
+      type: badge
+      outline_color: blue.500
+      text_color: blue.500
+    - Open Issues Count: data.open_issues_count
+    - Forks Count: data.forks_count
+    - Stargazers Count: data.stargazers_count
+    - Watchers Count: data.watchers_count
+
+
+tabs.0:
+  name: Issues
+  type: list
+  items:
+    - name: Issues
+      type: table
+      root_path: data.issues
+      fields:
+      - Number: number
+      - Title: title
+        link: html_url
+      - State: state
+        type: enum
+        enums:
+          - open: green.500
+          - closed: red.500
+      - Labels: labels.name
+      - Assignees: assignees.login
+      - Comments Count: comments
+
+tabs.1:
+  name: Languages
+  type: list
+  items:
+    - name: Languages
+      type: simple-table
+      root_path: data.languages
+      fields:
+      - Language: language
+        type: badge
+        outline_color: blue.500
+        text_color: blue.500
+      - Bytes of Code: bytes
+        type: size
+        display_unit: MB
+        source_unit: BYTES
+
+
+tabs.2:
+  name: Contributors
+  type: list
+  items:
+    - name: Contributors
+      type: simple-table
+      root_path: data.contributors
+      fields:
+        - Name: name
+        - Contributions: contributions
+        - Github Url: html_url
+        - Email: email
+        - Company: company
+        - Location: location
+        - Followers: followers
+        - Following: following
+
+tabs.3:
+  name: Branches
+  type: list
+  items:
+    - name: Branches
+      type: simple-table
+      root_path: data.branches
+      fields:
+        - Name: name
+        - Protected: protected
+        - Commit: commit.sha
+          link: commit.url
+
+tabs.4:
+  name: Forks
+  type: list
+  items:
+    - name: Forked Repos
+      type: simple-table
+      root_path: data.forks_info
+      fields:
+        - Name: name
+        - Github Url: html_url
+        - Owner: owner_info.login
+        - Open Issues Count: open_issues_count
+        - Forks Count: forks_count
+    - name: Forked Repo Owners
+      type: simple-table
+      root_path: data.forks_info.owner_info
+      fields:
+        - Name: name
+        - ID: login
+        - Email: email
+        - Github Url: html_url
+        - Company: company
+        - Location: location
+        - Followers: followers
+        - Following: following

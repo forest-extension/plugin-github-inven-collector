@@ -1,12 +1,16 @@
-from spaceone.inventory.plugin.collector.lib.server import CollectorPluginServer
+import logging
 
+from spaceone.inventory.plugin.collector.lib.server import CollectorPluginServer
+from plugin.manager.organization.repository_manager import OrgRepositoryManager
+
+_LOGGER = logging.getLogger("cloudforet")
 
 app = CollectorPluginServer()
 
 
-@app.route('Collector.init')
+@app.route("Collector.init")
 def collector_init(params: dict) -> dict:
-    """ init plugin by options
+    """init plugin by options
 
     Args:
         params (CollectorInitRequest): {
@@ -19,30 +23,13 @@ def collector_init(params: dict) -> dict:
             'metadata': 'dict'
         }
     """
-    pass
+
+    return {"metadata": {}}
 
 
-@app.route('Collector.verify')
-def collector_verify(params: dict) -> None:
-    """ Verifying collector plugin
-
-    Args:
-        params (CollectorVerifyRequest): {
-            'options': 'dict',      # Required
-            'secret_data': 'dict',  # Required
-            'schema': 'str',
-            'domain_id': 'str'
-        }
-
-    Returns:
-        None
-    """
-    pass
-
-
-@app.route('Collector.collect')
+@app.route("Collector.collect")
 def collector_collect(params: dict) -> dict:
-    """ Collect external data
+    """Collect external data
 
     Args:
         params (CollectorCollectRequest): {
@@ -63,4 +50,11 @@ def collector_collect(params: dict) -> dict:
             'metadata': 'dict'
         }
     """
-    pass
+
+    options = params["options"]
+    secret_data = params["secret_data"]
+    schema = params.get("schema")
+
+    org_repository_manager = OrgRepositoryManager()
+    # return org_repository_manager.collect_cloud_service_type(options, secret_data, schema)
+    return org_repository_manager.collect_resources(options, secret_data, schema)
