@@ -1,0 +1,13 @@
+---
+search:
+  fields:
+    - Type: data.type
+    - Total Private Repo: data.total_private_repos
+
+table:
+  sort:
+    key: data.field
+    desc: true
+  fields:
+    - Type: data.type
+    - Total Private Repo: data.total_private_repos
