@@ -1,10 +1,8 @@
 import logging
 
 from spaceone.inventory.plugin.collector.lib import *
-from ..manager import GithubBaseManager
+from plugin.manager.base import GithubBaseManager
 from ..connector.org_connector import OrgConnector
-
-from abc import abstractmethod, ABC, ABCMeta
 
 _LOGGER = logging.getLogger("cloudforet")
 
@@ -15,8 +13,8 @@ class RepositoryManager(GithubBaseManager):
 
         self.cloud_service_group = "Organizations"
         self.cloud_service_type = "Repository"
-        self.provider = "Github"
-        self.metadata_path = "plugin/metadata/organizations/organization.yaml"
+        self.provider = "github_minho"
+        self.metadata_path = "metadata/organizations/organization.yaml"
 
     def collect_resources(self, options, secret_data, schema):
         try:
@@ -58,7 +56,6 @@ class RepositoryManager(GithubBaseManager):
         org_connector = OrgConnector()
 
         for repo in org_connector.get_org_repos(secret_data):
-            print(repo)
             cloud_service = make_cloud_service(
                 name=self.cloud_service_type,
                 cloud_service_type=self.cloud_service_type,

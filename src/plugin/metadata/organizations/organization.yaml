@@ -1,59 +1,13 @@
 ---
 search:
   fields:
-    - Field ID: data.field
-    - Text Field: data.text
-    - State Field: data.state
-    - Badge Field: data.badge
-    - Datetime Field: data.datetime
-    - Image Field: data.image
-    - Enum Field: data.enum
+    - Type: data.type
+    - Total Private Repo: data.total_private_repos
+
 table:
   sort:
     key: data.field
     desc: true
   fields:
-    - Field ID: data.field
-    - Text Field: data.text
-    - State Field: data.state
-    - Badge Field: data.badge
-    - Datetime Field: data.datetime
-    - Image Field: data.image
-    - Enum Field: data.enum
-tabs.0:
-  name: Tap 1
-  type: item
-  fields:
-    - Field ID: data.field
-    - Text Field: data.text
-    - State Field: data.state
-    - Badge Field: data.badge
-    - Datetime Field: data.datetime
-    - Image Field: data.image
-    - Enum Field: data.enum
-tabs.1:
-  name: Tap 2
-  type: list
-  items:
-    - key: data.member_id
-      name: Dynamic View 1
-      type: item
-      fields:
-        - Field ID: data.field
-        - Text Field: data.text
-        - State Field: data.state
-        - Badge Field: data.badge
-        - Datetime Field: data.datetime
-        - Image Field: data.image
-        - Enum Field: data.enum
-    - key: data.part
-      name: Dynamic View 2
-      type: simple-table
-      fields:
-        - Field ID: data.field
-        - Text Field: data.text
-        - State Field: data.state
-        - Badge Field: data.badge
-        - Datetime Field: data.datetime
-        - Image Field: data.image
-        - Enum Field: data.enum
+    - Type: data.type
+    - Total Private Repo: data.total_private_repos
